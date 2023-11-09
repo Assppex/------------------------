@@ -1,0 +1,10 @@
+#canvas-wrapper,#input-wrapper
+{
+    margin-left: calc(50% - 400px);
+    margin-top:50px;
+}
+
+#input-wrapper
+{
+    display:inline-block;
+}

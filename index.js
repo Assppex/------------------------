@@ -25,6 +25,7 @@ class Knut
         this.N = N;
         this.v0 = v0;
         this.k = k;
+        //  this.l0 = l0;
     }
 
 
@@ -37,18 +38,29 @@ class Knut
         for(var i = 0 ; i < this.N; i++)
         {
             ctx.beginPath();
-            ctx.arc(length/(2*this.N)*i + length/(2*this.N)*(i + 1), 300, length/(2*this.N), 0, 2*Math.PI); 
+            ctx.arc(10*(2*i+1), 590, 10 , 0, 2*Math.PI); 
             ctx.fill();
-            particles.push( new Knut_particles(1,i,length/(2*this.N)*i + length/(2*this.N)*(i + 1),300,0,0,length/(2*this.N)));
+            particles.push( new Knut_particles(1,i,10*(2*i+1),590,0,0,10));
             
         }
+        particles[0].v_y = -10;
+        particles[1].v_y = -7;
+        particles[2].v_y = -6;
+        particles[3].v_y = -5;
+        particles[4].v_y = -4;
+        particles[5].v_y = -3;
 
-        particles[0].x = 0;
-        particles[0].v_x = 0;
-
-        particles[0].y = 0;
-        particles[0].v_y = 2*5;
+        
     }
+}
+
+function sleep(milliseconds)
+{
+    const date = Date.now();
+    let currentDate = null;
+    do {
+      currentDate = Date.now();
+    } while (currentDate - date < milliseconds);
 }
 
 function draw_knut()
@@ -96,52 +108,97 @@ function solve(i,dt)
 */
 
   //Метод leapfrog
-  let c = 0.1;
-  let l0 =  0;
+  let c = 5;
+  let l0 =  20; //отношение m/c должно быть около 2
+  var m = 10;
   if( i > 0 && i != particles.length - 1)
   {
-    let l2 = Math.sqrt(Math.pow(particles[i].x - particles[i-1].x,2) + Math.pow(particles[i].y - particles[i-1].y,2));
-    let l1 = Math.sqrt(Math.pow(particles[i+1].x - particles[i].x,2) + Math.pow(particles[i+1].y - particles[i].y,2));
 
-    particles[i].v_x = particles[i].v_x + c*(l1 - l0)/m*Math.abs((particles[i].x - particles[i-1].x)/(particles[i].y - particles[i-1].y))*dt + c*(l2 - l0)/m*Math.abs((particles[i+1].x - particles[i].x)/(particles[i+1].y - particles[i].y))*dt; //- particles[i].x*dt;
+    let l1 = Math.sqrt(Math.pow(particles[i].x - particles[i-1].x,2) + Math.pow(particles[i].y - particles[i-1].y,2));
+    let l2 = Math.sqrt(Math.pow(particles[i+1].x - particles[i].x,2) + Math.pow(particles[i+1].y - particles[i].y,2));
+
+    let cos_prev = (particles[i-1].x - particles[i].x)/l1;
+    let sin_prev = (particles[i-1].y - particles[i].y)/l1;
+    
+    let cos_next = (particles[i+1].x - particles[i].x)/l2;
+    let sin_next = (particles[i+1].y - particles[i].y)/l2;
+
+    particles[i].v_x = particles[i].v_x + c*(l1 - l0)/m*cos_prev*dt + c*(l2 - l0)/m*cos_next*dt; //- particles[i].x*dt;
     particles[i].x = particles[i].x + particles[i].v_x*dt;
 
-    particles[i].v_y = particles[i].v_y + c*(l2 - l0)/m*Math.abs((particles[i+1].y - particles[i].y)/(particles[i+1].x - particles[i].x))*dt + c*(l1 - l0)/m*Math.abs((particles[i].y - particles[i-1].y)/(particles[i].x - particles[i-1].x))*dt;
+    if(particles[i].y > 590)
+    {
+        particles[i].v_y = 0;
+        particles[i].v_x = 0;
+    }
+    else
+    {
+        particles[i].v_y = particles[i].v_y + c*(l2 - l0)/m*sin_next*dt + c*(l1 - l0)/m*sin_prev*dt;
+    }
     particles[i].y = particles[i].y + particles[i].v_y*dt;
+
+    //console.log("New coords for particle " + i + ":" + particles[i].x + " " + particles[i].y + " " + (c*(l2 - l0)/m*sin_next*dt - c*(l1 - l0)/m*sin_prev*dt) + " " + " " + particles[i].v_y);
   }
   else if( i == 0)
   {
-    let l1 = Math.sqrt(Math.pow(particles[i+1].x - particles[i].x,2) + Math.pow(particles[i+1].y - particles[i].y,2));
+    let l2 = Math.sqrt(Math.pow(particles[i+1].x - particles[i].x,2) + Math.pow(particles[i+1].y - particles[i].y,2));
 
+    let cos_next = (particles[i+1].x - particles[i].x)/l2;
+    let sin_next = (particles[i+1].y - particles[i].y)/l2;
+
+    particles[i].v_x = particles[i].v_x + c*(l2 - l0)/m*cos_next*dt; //- particles[i].x*dt;
+    particles[i].x = particles[i].x + particles[i].v_x*dt;
+    if(particles[i].y > 590)
+    {
+        particles[i].v_y = 0;
+        particles[i].v_x = 0;
+    }
+    else{
+        particles[i].v_y = particles[i].v_y + c*(l2 - l0)/m*sin_next*dt;
+    }
+    particles[i].y = particles[i].y + particles[i].v_y*dt;
     
+    //console.log("New coords for particle " + i + ":" + sin_next + " " + cos_next);
   }
-  else if( i == particles.length)
+  else if( i == particles.length - 1)
   {
-    let l2 = Math.sqrt(Math.pow(particles[i].x - particles[i-1].x,2) + Math.pow(particles[i].y - particles[i-1].y,2));
+    let l1 = Math.sqrt(Math.pow(particles[i].x - particles[i-1].x,2) + Math.pow(particles[i].y - particles[i-1].y,2));
 
+    let cos_prev = (particles[i-1].x - particles[i].x)/l1;
+    let sin_prev = (particles[i-1].y - particles[i].y)/l1;
+    
+    particles[i].v_x = 0//particles[i].v_x + c*(l1 - l0)/m*cos_prev*dt; //- particles[i].x*dt;
+    particles[i].x = particles[i].x + particles[i].v_x*dt;
 
+    particles[i].v_y = 0//particles[i].v_y + c*(l1 - l0)/m*sin_prev*dt;
+    particles[i].y = particles[i].y + particles[i].v_y*dt;
+
+    //console.log("New coords for particle " + i + ":" + particles[i].x + " " + particles[i].y);
+    console.log("New coords for particle " + i + ":" + particles[i].v_x + (l1-l0))
   }
 
 }
 
 but.addEventListener('click',function(){
-    var a = new Knut(50,0,0)
+    var a = new Knut(20,0,0)
     a.draw_knut_first_time();
 });
 
 start_but.addEventListener('click',function(){
-    let current_t = 0;
-    let max_t = 10; // решаем задачу для t от 0 до max_t (max_t тоже мб стоит вводить как параметр)
-    let dt = 0.01; //мб стоит позволить ввести шаг по времени (отдельный инпут)
 
-    for(var t = 0; t < max_t; t+=dt)
+    setInterval(control,0.1);
+});
+function phys()
+{
+    let dt = 0.1; //мб стоит позволить ввести шаг по времени (отдельный инпут)
+    for(var i = 0; i < particles.length ; i++)
     {
-        for(var i = 0; i < particles.length; i++)
-        {
-            solve(i,dt);
-        }
+        solve(i,dt);
         draw_knut();
     }
-
-});
-
+}
+function control (){
+    phys();
+	draw_knut();
+}
+	

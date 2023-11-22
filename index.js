@@ -34,22 +34,34 @@ class Knut {
         particles = [];
         for (var i = 0; i < this.N; i++) {
             ctx.beginPath();
-            ctx.arc(10 * (2 * i + 1), 550, 10, 0, 2 * Math.PI);
+            ctx.arc(10 * (2 * i + 1), 770, 10, 0, 2 * Math.PI);
             ctx.fill();
-            particles.push(new Knut_particles(1, i, 10 * (2 * i + 1), 550, 0, 0, 10));
+            particles.push(new Knut_particles(1, i, 10 * (2 * i + 1), 770, 0, 0, 10));
 
         }
         
         //particles[0].v_y = -30;
         //particles[0].v_x = 0;
-       
+        particles[this.N - 2].v_y = -20;
+        particles[this.N - 3].v_y = -17;
+        particles[this.N - 4].v_y = -16;
+        particles[this.N - 5].v_y = -15;
+        particles[this.N - 6].v_y = -14;
+        particles[this.N - 7].v_y = -13;
         
-        particles[0].v_y = -10;
-        particles[1].v_y = -7;
-        particles[2].v_y = -6;
-        particles[3].v_y = -5;
-        particles[4].v_y = -4;
-        particles[5].v_y = -3;
+        // particles[0].v_y = -20;
+        // particles[1].v_y = -17;
+        // particles[2].v_y = -16;
+        // particles[3].v_y = -15;
+        // particles[4].v_y = -14;
+        // particles[5].v_y = -13;
+
+        // particles[0].v_x = 10;
+        // particles[1].v_x = 7;
+        // particles[2].v_x = 6;
+        // particles[3].v_x = 5;
+        // particles[4].v_x = 4;
+        // particles[5].v_x = 3;
         
         //particles[4].v_y = -4;
         //particles[5].v_y = -3;
@@ -161,40 +173,48 @@ function solve_leapfrog(dt)
 
     for (var i = 0; i < particles.length; i++)
     {
-        if(i > 0 && i < particles.length - 1)
+        if(new_particles[i].y <= 780)
         {
-            let l1 = Math.sqrt(Math.pow(particles[i].x - particles[i-1].x, 2) + Math.pow(particles[i].y - particles[i - 1].y, 2));
-            let l2 = Math.sqrt(Math.pow(particles[i + 1].x - particles[i].x, 2) + Math.pow(particles[i + 1].y - particles[i].y, 2));
+            if(i > 0 && i < particles.length - 1)
+            {
+                let l1 = Math.sqrt(Math.pow(particles[i].x - particles[i-1].x, 2) + Math.pow(particles[i].y - particles[i - 1].y, 2));
+                let l2 = Math.sqrt(Math.pow(particles[i + 1].x - particles[i].x, 2) + Math.pow(particles[i + 1].y - particles[i].y, 2));
 
-            let cos_prev = (particles[i - 1].x - particles[i].x) / l1;
-            let sin_prev = (particles[i - 1].y - particles[i].y) / l1;
+                let cos_prev = (particles[i - 1].x - particles[i].x) / l1;
+                let sin_prev = (particles[i - 1].y - particles[i].y) / l1;
 
-            let cos_next = (particles[i + 1].x - particles[i].x) / l2;
-            let sin_next = (particles[i + 1].y - particles[i].y) / l2;
+                let cos_next = (particles[i + 1].x - particles[i].x) / l2;
+                let sin_next = (particles[i + 1].y - particles[i].y) / l2;
 
-            let Fx = c * (l1 - l0) / m * cos_prev + c * (l2 - l0) / m * cos_next;
-            let Fy = c * (l2 - l0) / m * sin_next  + c * (l1 - l0) / m * sin_prev;
+                let Fx = c * (l1 - l0) / m * cos_prev + c * (l2 - l0) / m * cos_next;
+                let Fy = c * (l2 - l0) / m * sin_next  + c * (l1 - l0) / m * sin_prev;
 
-            //alert(particles[i].x + " " + particles_steps[particles_steps.length - 2][i].x);
+                //alert(particles[i].x + " " + particles_steps[particles_steps.length - 2][i].x);
 
-            new_particles[i].x = 2*particles[i].x - particles_steps[particles_steps.length - 2][i].x + Fx/m*Math.pow(dt,2);
-            new_particles[i].y = +  2*particles[i].y - particles_steps[particles_steps.length - 2][i].y + Fy/m*Math.pow(dt,2);
+                new_particles[i].x = 2*particles[i].x - particles_steps[particles_steps.length - 2][i].x + Fx*Math.pow(dt,2);
+                new_particles[i].y = +  2*particles[i].y - particles_steps[particles_steps.length - 2][i].y + Fy*Math.pow(dt,2);
 
-            console.log("For part. " + i,particles[i].x,particles_steps[particles_steps.length - 2][i].x);
-        }
-        else if(i == 0)
-        {   
-            let l2 = Math.sqrt(Math.pow(particles[i + 1].x - particles[i].x, 2) + Math.pow(particles[i + 1].y - particles[i].y, 2));
+                console.log("For part. " + i,particles[i].x,particles_steps[particles_steps.length - 2][i].x);
+            }
+            else if(i == 0)
+            {   
+                let l2 = Math.sqrt(Math.pow(particles[i + 1].x - particles[i].x, 2) + Math.pow(particles[i + 1].y - particles[i].y, 2));
+                
+                let cos_next = (particles[i + 1].x - particles[i].x) / l2;
+                let sin_next = (particles[i + 1].y - particles[i].y) / l2;
+
+                let Fx = c * (l2 - l0) / m * cos_next;
+                let Fy = c * (l2 - l0) / m * sin_next;
             
-            let cos_next = (particles[i + 1].x - particles[i].x) / l2;
-            let sin_next = (particles[i + 1].y - particles[i].y) / l2;
-
-            let Fx = c * (l2 - l0) / m * cos_next;
-            let Fy = c * (l2 - l0) / m * sin_next;
-        
-            new_particles[i].x = 2*particles[i].x - particles_steps[particles_steps.length - 2][i].x + Fx/m*Math.pow(dt,2);
-            new_particles[i].y = 2*particles[i].y - particles_steps[particles_steps.length - 2][i].y + Fy/m*Math.pow(dt,2);
+                new_particles[i].x = 2*particles[i].x - particles_steps[particles_steps.length - 2][i].x + Fx*Math.pow(dt,2);
+                new_particles[i].y = 2*particles[i].y - particles_steps[particles_steps.length - 2][i].y + Fy*Math.pow(dt,2);
+            }
         }
+        {
+            console.log(new_particles[i].y);
+        }
+        
+
     }
     let tmp = []
     for(let i = 0; i < particles.length; i++ )
